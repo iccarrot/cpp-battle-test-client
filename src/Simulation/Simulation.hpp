@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Simulation/Config.hpp"
+#include "Simulation/Services/ServiceManager.hpp"
 
 #include <filesystem>
 
@@ -22,15 +23,28 @@ namespace sw::simulation
 			std::filesystem::path m_simulationPath;
 		};
 
+		enum class Status : uint8_t
+		{
+			Initialized = 0u,
+			Stopped = Initialized,
+			Running,
+			Finalized
+		};
+
 	public:
 		explicit Simulation(Cfg&& cfg);
-		~Simulation() = default;
+		~Simulation();
 
 		void run();
+		void stop();
 
 	private:
+		void update();
+
 		InstanceHolder	m_instance;
 		Cfg				m_cfg;
+		ServiceManager	m_serviceManager;
+		Status			m_status = Status::Initialized;
 	};
 
 	Simulation& instance();

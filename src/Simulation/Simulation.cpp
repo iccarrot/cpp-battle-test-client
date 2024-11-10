@@ -1,5 +1,7 @@
 #include "Simulation/Simulation.hpp"
 
+#include "Simulation/Services/WorldService.hpp"
+
 #include <IO/Commands/CreateMap.hpp>
 #include <IO/Commands/March.hpp>
 #include <IO/Commands/SpawnHunter.hpp>
@@ -29,7 +31,12 @@ namespace sw::simulation
 		: m_instance{ *this }
 		, m_cfg{ std::move(cfg) }
 	{
+		m_serviceManager.assign<WorldService>();
+	}
 
+	Simulation::~Simulation()
+	{
+		m_status = Status::Finalized;
 	}
 
 	void Simulation::run()
@@ -40,6 +47,13 @@ namespace sw::simulation
 			throw std::runtime_error("Error: File not found - " + m_cfg.m_simulationPath.string());
 		}
 
+		assert(m_status == Status::Initialized && "The simulator should be initialized first");
+
+		for (m_status = Status::Running; m_status == Status::Running;)
+		{
+			update();
+		}
+
 		std::cout << "Commands:\n";
 		io::CommandParser parser;
 		parser.add<io::CreateMap>([](auto command) { printDebug(std::cout, command); })
@@ -48,6 +62,19 @@ namespace sw::simulation
 			.add<io::March>([](auto command) { printDebug(std::cout, command); });
 
 		parser.parse(file);
+	}
+
+	void Simulation::stop()
+	{
+		if (m_status == Status::Running)
+		{
+			m_status = Status::Stopped;
+		}
+	}
+
+	void Simulation::update()
+	{
+		m_serviceManager.update();
 	}
 
 	Simulation& instance()
