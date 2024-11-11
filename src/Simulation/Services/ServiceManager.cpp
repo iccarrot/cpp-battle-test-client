@@ -2,11 +2,11 @@
 
 namespace sw::simulation
 {
-	void ServiceManager::update()
+	void ServiceManager::update(const Turn turn)
 	{
 		for (const auto& service : m_services)
 		{
-			service->update();
+			service->update(turn);
 		}
 	}
 }

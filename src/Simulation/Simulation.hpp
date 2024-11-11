@@ -39,7 +39,7 @@ namespace sw::simulation
 		void stop();
 
 	private:
-		void update();
+		void update(const Turn turn);
 
 		InstanceHolder	m_instance;
 		Cfg				m_cfg;

@@ -25,7 +25,7 @@ namespace sw::simulation
 		template <typename T>
 		T&			get();
 
-		void		update();
+		void		update(const Turn turn);
 
 	private:
 		ServiceContainer m_services;
@@ -53,7 +53,7 @@ namespace sw::simulation
 		static_assert(std::is_base_of_v<IService, T>, "T has to be derived from IService");
 		assert(T::type != IService::C_INVALID_TYPE && "Service has to be assign first");
 
-		return *m_services[T::Type];
+		return static_cast<const T&>(*m_services[T::type]);
 	}
 
 	template <typename T>
@@ -62,6 +62,6 @@ namespace sw::simulation
 		static_assert(std::is_base_of_v<IService, T>, "T has to be derived from IService");
 		assert(T::type != IService::C_INVALID_TYPE && "Service has to be assign first");
 
-		return *m_services[T::Type];
+		return static_cast<T&>(*m_services[T::type]);
 	}
 }

@@ -2,12 +2,11 @@
 
 #include "Simulation/Config.hpp"
 
-#include <cstdint>
 #include <limits>
 
 namespace sw::simulation
 {
-	class IService : public NonCopyable
+	class IComponent : public NonCopyable
 	{
 	public:
 		using Type = uint8_t;
@@ -15,18 +14,16 @@ namespace sw::simulation
 		inline static constexpr Type C_INVALID_TYPE = std::numeric_limits<Type>::max();
 
 	public:
-		virtual ~IService() = default;
-
-		virtual void update(const Turn turn) {}
+		virtual ~IComponent() = default;
 	};
 
 	template<typename T>
-	class Service : public IService
+	class Component : public IComponent
 	{
 		friend class ServiceManager;
 		static Type type;
 	};
 
 	template <typename T>
-	IService::Type Service<T>::type = IService::C_INVALID_TYPE;
+	IComponent::Type Component<T>::type = IComponent::C_INVALID_TYPE;
 }

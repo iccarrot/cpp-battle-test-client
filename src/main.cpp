@@ -7,7 +7,6 @@
 #include <IO/Events/UnitSpawned.hpp>
 #include <IO/System/EventLog.hpp>
 #include <Simulation/Simulation.hpp>
-#include <fstream>
 #include <iostream>
 
 int main(int argc, char** argv)
@@ -22,6 +21,11 @@ int main(int argc, char** argv)
 
 	Simulation::Cfg cfg;
 	cfg.m_simulationPath = argv[1];
+
+	if (!cfg.m_simulationPath.has_filename() || !std::filesystem::exists(cfg.m_simulationPath))
+	{
+		throw std::runtime_error("Error: File not found - " + cfg.m_simulationPath.string());
+	}
 
 	Simulation simulation(std::move(cfg));
 	simulation.run();

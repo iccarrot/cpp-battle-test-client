@@ -1,17 +1,8 @@
 #include "Simulation/Simulation.hpp"
 
-#include "Simulation/Services/WorldService.hpp"
-
-#include <IO/Commands/CreateMap.hpp>
-#include <IO/Commands/March.hpp>
-#include <IO/Commands/SpawnHunter.hpp>
-#include <IO/Commands/SpawnSwordsman.hpp>
-#include <IO/System/CommandParser.hpp>
-#include <IO/System/PrintDebug.hpp>
+#include "Simulation/Services/WorldService/WorldService.hpp"
 
 #include <cassert>
-#include <fstream>
-#include <iostream>
 
 namespace sw::simulation
 {
@@ -41,27 +32,14 @@ namespace sw::simulation
 
 	void Simulation::run()
 	{
-		std::ifstream file(m_cfg.m_simulationPath);
-		if (!file)
-		{
-			throw std::runtime_error("Error: File not found - " + m_cfg.m_simulationPath.string());
-		}
+		assert(m_status == Status::Initialized && "The simulation should be initialized first");
+		m_serviceManager.get<WorldService>().loadWorld(m_cfg.m_simulationPath);
 
-		assert(m_status == Status::Initialized && "The simulator should be initialized first");
-
+		Turn currentTurn = 0u;
 		for (m_status = Status::Running; m_status == Status::Running;)
 		{
-			update();
+			update(++currentTurn);
 		}
-
-		std::cout << "Commands:\n";
-		io::CommandParser parser;
-		parser.add<io::CreateMap>([](auto command) { printDebug(std::cout, command); })
-			.add<io::SpawnSwordsman>([](auto command) { printDebug(std::cout, command); })
-			.add<io::SpawnHunter>([](auto command) { printDebug(std::cout, command); })
-			.add<io::March>([](auto command) { printDebug(std::cout, command); });
-
-		parser.parse(file);
 	}
 
 	void Simulation::stop()
@@ -72,9 +50,9 @@ namespace sw::simulation
 		}
 	}
 
-	void Simulation::update()
+	void Simulation::update(const Turn turn)
 	{
-		m_serviceManager.update();
+		m_serviceManager.update(turn);
 	}
 
 	Simulation& instance()
