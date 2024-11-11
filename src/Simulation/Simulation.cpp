@@ -23,6 +23,7 @@ namespace sw::simulation
 		: m_instance{ *this }
 		, m_cfg{ std::move(cfg) }
 	{
+		//-- the order is important
 		m_serviceManager.assign<LogService>();
 		m_serviceManager.assign<WorldService>();
 	}

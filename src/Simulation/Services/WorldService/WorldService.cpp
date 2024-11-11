@@ -1,7 +1,6 @@
 #include "Simulation/Services/WorldService/WorldService.hpp"
 
 #include "Simulation/Services/WorldService/WorldParser.hpp"
-#include "Simulation/Simulation.hpp"
 
 namespace sw::simulation
 {
@@ -32,7 +31,5 @@ namespace sw::simulation
 		{
 			world->postUpdate(turn);
 		}
-
-		simulation::instance().stop();
 	}
 }

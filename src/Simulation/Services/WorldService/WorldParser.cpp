@@ -40,21 +40,23 @@ namespace sw::simulation
 			.add<io::SpawnSwordsman>([this, &logService](auto command)
 				{
 					printDebug(std::cout, command);
-					m_world.createEntity(command.unitId);
+
+					auto& entityManager = m_world.em();
+					entityManager.createEntity(command.unitId);
 
 					{
-						auto& component = m_world.assignComponent<PositionComponent>(command.unitId);
+						auto& component = entityManager.assignComponent<PositionComponent>(command.unitId);
 						component.x = command.x;
 						component.y = command.y;
 					}
 
 					{
-						auto& component = m_world.assignComponent<HealthComponent>(command.unitId);
+						auto& component = entityManager.assignComponent<HealthComponent>(command.unitId);
 						component.hp = command.hp;
 					}
 
 					{
-						auto& component = m_world.assignComponent<MeleeAttackComponent>(command.unitId);
+						auto& component = entityManager.assignComponent<MeleeAttackComponent>(command.unitId);
 						component.strength = command.strength;
 					}
 
@@ -70,26 +72,28 @@ namespace sw::simulation
 			.add<io::SpawnHunter>([this, &logService](auto command)
 				{
 					printDebug(std::cout, command);
-					m_world.createEntity(command.unitId);
+
+					auto& entityManager = m_world.em();
+					entityManager.createEntity(command.unitId);
 					
 					{
-						auto& component = m_world.assignComponent<PositionComponent>(command.unitId);
+						auto& component = entityManager.assignComponent<PositionComponent>(command.unitId);
 						component.x = command.x;
 						component.y = command.y;
 					}
 
 					{
-						auto& component = m_world.assignComponent<HealthComponent>(command.unitId);
+						auto& component = entityManager.assignComponent<HealthComponent>(command.unitId);
 						component.hp = command.hp;
 					}
 
 					{
-						auto& component = m_world.assignComponent<MeleeAttackComponent>(command.unitId);
+						auto& component = entityManager.assignComponent<MeleeAttackComponent>(command.unitId);
 						component.strength = command.strength;
 					}
 
 					{
-						auto& component = m_world.assignComponent<RangeAttackComponent>(command.unitId);
+						auto& component = entityManager.assignComponent<RangeAttackComponent>(command.unitId);
 						component.agility = command.agility;
 						component.range = command.range;
 					}
@@ -107,9 +111,11 @@ namespace sw::simulation
 				{
 					printDebug(std::cout, command);
 
-					if (const auto positionComponent = m_world.getComponent<PositionComponent>(command.unitId))
+					auto& entityManager = m_world.em();
+
+					if (const auto positionComponent = entityManager.getComponent<PositionComponent>(command.unitId))
 					{
-						auto& moveComponent = m_world.assignComponent<MoveComponent>(command.unitId);
+						auto& moveComponent = entityManager.assignComponent<MoveComponent>(command.unitId);
 						moveComponent.x = command.targetX;
 						moveComponent.y = command.targetY;
 

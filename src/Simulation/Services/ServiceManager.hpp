@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Simulation/Config.hpp"
 #include "Simulation/Services/Service.hpp"
 
 #include <cassert>
@@ -35,34 +34,53 @@ namespace sw::simulation
 	template <typename T>
 	void ServiceManager::assign()
 	{
-		static_assert(std::is_base_of_v<IService, T>, "T has to be derived from IService");
+		static_assert(std::is_base_of_v<IService, T>, "T has to be derived from Service");
 
-		if (T::type == IService::C_INVALID_TYPE)
+		if (T::s_type == IService::C_INVALID_TYPE)
 		{
-			m_services.emplace_back(std::make_unique<T>());
-			T::type = m_services.size() - 1;
+			T::s_type = typeid(T).hash_code();
 		}
-		else
+
+		for (const auto& service : m_services)
 		{
-			assert(!"Service already assign");
+			if (service->type() == T::s_type)
+			{
+				assert(!"Service already assign");
+			}
 		}
+
+		m_services.emplace_back(std::make_unique<T>());
 	}
 
 	template <typename T>
 	const T& ServiceManager::get() const
 	{
-		static_assert(std::is_base_of_v<IService, T>, "T has to be derived from IService");
+		static_assert(std::is_base_of_v<IService, T>, "T has to be derived from Service");
 		assert(T::type != IService::C_INVALID_TYPE && "Service has to be assign first");
 
-		return static_cast<const T&>(*m_services[T::type]);
+		const auto found = std::find_if(std::begin(m_services), std::end(m_services), [](auto& service)
+			{
+				return service->type() == T::s_type;
+			});
+
+		assert(found != std::end(m_services) && "Service has to be assign first");
+
+		return static_cast<const T&>(**found);
 	}
 
 	template <typename T>
 	T& ServiceManager::get()
 	{
-		static_assert(std::is_base_of_v<IService, T>, "T has to be derived from IService");
-		assert(T::type != IService::C_INVALID_TYPE && "Service has to be assign first");
+		static_assert(std::is_base_of_v<IService, T>, "T has to be derived from Service");
+		assert(T::s_type != IService::C_INVALID_TYPE && "Service has to be assign first");
 
-		return static_cast<T&>(*m_services[T::type]);
+		auto found = std::find_if(std::begin(m_services), std::end(m_services), [](auto& service)
+			{
+				return service->type() == T::s_type;
+			});
+
+		assert(found != std::end(m_services) && "Service has to be assign first");
+
+		return static_cast<T&>(**found);
 	}
 }

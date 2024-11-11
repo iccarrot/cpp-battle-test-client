@@ -11,6 +11,8 @@ namespace sw::simulation
 	{
 	public:
 		virtual ~IComponentManager() = default;
+
+		virtual bool empty() const = 0;
 	};
 
 	template<typename T>
@@ -24,6 +26,8 @@ namespace sw::simulation
 		T&			assignComponent(const Entity entity);
 		const T*	getComponent(const Entity entity) const;
 		T*			getComponent(const Entity entity);
+		void		removeComponent(const Entity entity);
+		bool		empty() const override { return m_components.empty(); }
 
 	private:
 		ComponentContainer m_components;
@@ -34,7 +38,7 @@ namespace sw::simulation
 	{
 		if (auto found = m_components.find(entity); found == std::end(m_components))
 		{
-			return static_cast<T&>(*m_components.try_emplace(entity, std::make_unique<T>()).first->second);
+			return static_cast<T&>(*m_components.emplace(entity, std::make_unique<T>()).first->second);
 		}
 		else
 		{
@@ -62,5 +66,11 @@ namespace sw::simulation
 		}
 
 		return nullptr;
+	}
+
+	template <typename T>
+	void ComponentManager<T>::removeComponent(const Entity entity)
+	{
+		m_components.erase(entity);
 	}
 }

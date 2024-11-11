@@ -14,16 +14,23 @@ namespace sw::simulation
 		using ComponentManagerContainer		= std::unordered_map<std::size_t, ComponentManagerPtr>;
 
 	public:
-		void		createEntity(const Entity entity);
+		const EntityContainer&				entities() const { return m_entities; }
+		void								createEntity(const Entity entity);
 
 		template <typename T>
-		T&			assignComponent(const Entity entity);
+		const ComponentManager<T>*			componentManager() const;
 
 		template <typename T>
-		const T*	getComponent(const Entity entity) const;
+		T&									assignComponent(const Entity entity);
 
 		template <typename T>
-		T*			getComponent(const Entity entity);
+		const T*							getComponent(const Entity entity) const;
+
+		template <typename T>
+		T*									getComponent(const Entity entity);
+
+		template <typename T>
+		void								removeComponent(const Entity entity);
 
 	private:
 		EntityContainer				m_entities;
@@ -31,16 +38,37 @@ namespace sw::simulation
 	};
 
 	template <typename T>
+	const ComponentManager<T>* EntityManager::componentManager() const
+	{
+		static_assert(std::is_base_of_v<IComponent, T>, "T has to be derived from Component");
+
+		if (T::s_type == IComponent::C_INVALID_TYPE)
+		{
+			return nullptr;
+		}
+
+		if (const auto found = m_componentManagers.find(T::s_type); found != std::end(m_componentManagers))
+		{
+			return &static_cast<const ComponentManager<T>&>(*found->second);
+		}
+
+		return nullptr;
+	}
+
+	template <typename T>
 	T& EntityManager::assignComponent(const Entity entity)
 	{
-		static_assert(std::is_base_of_v<IComponent, T>, "T has to be derived from IComponent");
+		static_assert(std::is_base_of_v<IComponent, T>, "T has to be derived from Component");
 		
-		const auto hash = typeid(T).hash_code();
-
-		if (auto found = m_componentManagers.find(hash); found == std::end(m_componentManagers))
+		if (T::s_type == IComponent::C_INVALID_TYPE)
 		{
-			return static_cast<ComponentManager<T>&>(*m_componentManagers.try_emplace(
-				hash, std::make_unique<ComponentManager<T>>()).first->second).assignComponent(entity);
+			T::s_type = typeid(T).hash_code();
+		}
+
+		if (auto found = m_componentManagers.find(T::s_type); found == std::end(m_componentManagers))
+		{
+			return static_cast<ComponentManager<T>&>(*m_componentManagers.emplace(
+				T::s_type, std::make_unique<ComponentManager<T>>()).first->second).assignComponent(entity);
 		}
 		else
 		{
@@ -51,9 +79,14 @@ namespace sw::simulation
 	template <typename T>
 	const T* EntityManager::getComponent(const Entity entity) const
 	{
-		static_assert(std::is_base_of_v<IComponent, T>, "T has to be derived from IComponent");
+		static_assert(std::is_base_of_v<IComponent, T>, "T has to be derived from Component");
 
-		if (const auto found = m_componentManagers.find(typeid(T).hash_code()); found != std::end(m_componentManagers))
+		if (T::s_type == IComponent::C_INVALID_TYPE)
+		{
+			return nullptr;
+		}
+
+		if (const auto found = m_componentManagers.find(T::s_type); found != std::end(m_componentManagers))
 		{
 			return static_cast<const ComponentManager<T>&>(*found->second).getComponent(entity);
 		}
@@ -64,13 +97,34 @@ namespace sw::simulation
 	template <typename T>
 	T* EntityManager::getComponent(const Entity entity)
 	{
-		static_assert(std::is_base_of_v<IComponent, T>, "T has to be derived from IComponent");
+		static_assert(std::is_base_of_v<IComponent, T>, "T has to be derived from Component");
 
-		if (auto found = m_componentManagers.find(typeid(T).hash_code()); found != std::end(m_componentManagers))
+		if (T::s_type == IComponent::C_INVALID_TYPE)
+		{
+			return nullptr;
+		}
+
+		if (auto found = m_componentManagers.find(T::s_type); found != std::end(m_componentManagers))
 		{
 			return static_cast<ComponentManager<T>&>(*found->second).getComponent(entity);
 		}
 		
 		return nullptr;
+	}
+
+	template <typename T>
+	void EntityManager::removeComponent(const Entity entity)
+	{
+		static_assert(std::is_base_of_v<IComponent, T>, "T has to be derived from Component");
+
+		if (T::s_type == IComponent::C_INVALID_TYPE)
+		{
+			return;
+		}
+
+		if (auto found = m_componentManagers.find(T::s_type); found != std::end(m_componentManagers))
+		{
+			static_cast<ComponentManager<T>&>(*found->second).removeComponent(entity);
+		}
 	}
 }

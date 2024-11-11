@@ -16,7 +16,7 @@ namespace sw::simulation
 		void update(const Turn turn) override;
 
 		EventLog	m_eventLog;
-		Turn		m_turn;
+		Turn		m_turn = 0u;
 	};
 
 	template <typename T>
