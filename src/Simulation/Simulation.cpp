@@ -1,5 +1,6 @@
 #include "Simulation/Simulation.hpp"
 
+#include "Simulation/Services/LogService/LogService.hpp"
 #include "Simulation/Services/WorldService/WorldService.hpp"
 
 #include <cassert>
@@ -22,6 +23,7 @@ namespace sw::simulation
 		: m_instance{ *this }
 		, m_cfg{ std::move(cfg) }
 	{
+		m_serviceManager.assign<LogService>();
 		m_serviceManager.assign<WorldService>();
 	}
 
@@ -53,6 +55,7 @@ namespace sw::simulation
 	void Simulation::update(const Turn turn)
 	{
 		m_serviceManager.update(turn);
+		m_serviceManager.postUpdate(turn);
 	}
 
 	Simulation& instance()

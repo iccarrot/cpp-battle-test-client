@@ -1,12 +1,15 @@
 #include "Simulation/Services/WorldService/World.hpp"
 
-#include "Simulation/Simulation.hpp"
-
 namespace sw::simulation
 {
-	void World::update()
+	void World::update(const Turn turn)
 	{
-		simulation::instance().stop();
+
+	}
+
+	void World::postUpdate(const Turn turn)
+	{
+
 	}
 
 	void World::createEntity(const Entity entity)

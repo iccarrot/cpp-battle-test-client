@@ -35,8 +35,14 @@ namespace sw::simulation
 		explicit Simulation(Cfg&& cfg);
 		~Simulation();
 
-		void run();
-		void stop();
+		void		run();
+		void		stop();
+
+		template <typename T>
+		const T&	getService() const;
+
+		template <typename T>
+		T&			getService();
 
 	private:
 		void update(const Turn turn);
@@ -48,4 +54,16 @@ namespace sw::simulation
 	};
 
 	Simulation& instance();
+
+	template <typename T>
+	const T& Simulation::getService() const
+	{
+		return m_serviceManager.get<T>();
+	}
+
+	template <typename T>
+	T& Simulation::getService()
+	{
+		return m_serviceManager.get<T>();
+	}
 }

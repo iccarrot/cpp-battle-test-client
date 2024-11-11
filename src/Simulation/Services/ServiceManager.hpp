@@ -26,6 +26,7 @@ namespace sw::simulation
 		T&			get();
 
 		void		update(const Turn turn);
+		void		postUpdate(const Turn turn);
 
 	private:
 		ServiceContainer m_services;

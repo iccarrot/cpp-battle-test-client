@@ -19,6 +19,12 @@ namespace sw::simulation
 		template <typename T>
 		T&			assignComponent(const Entity entity);
 
+		template <typename T>
+		const T*	getComponent(const Entity entity) const;
+
+		template <typename T>
+		T*			getComponent(const Entity entity);
+
 	private:
 		EntityContainer				m_entities;
 		ComponentManagerContainer	m_componentManagers;
@@ -27,7 +33,6 @@ namespace sw::simulation
 	template <typename T>
 	T& EntityManager::assignComponent(const Entity entity)
 	{
-		static T result;
 		static_assert(std::is_base_of_v<IComponent, T>, "T has to be derived from IComponent");
 		
 		const auto hash = typeid(T).hash_code();
@@ -41,5 +46,31 @@ namespace sw::simulation
 		{
 			return static_cast<ComponentManager<T>&>(*found->second).assignComponent(entity);
 		}
+	}
+
+	template <typename T>
+	const T* EntityManager::getComponent(const Entity entity) const
+	{
+		static_assert(std::is_base_of_v<IComponent, T>, "T has to be derived from IComponent");
+
+		if (const auto found = m_componentManagers.find(typeid(T).hash_code()); found != std::end(m_componentManagers))
+		{
+			return static_cast<const ComponentManager<T>&>(*found->second).getComponent(entity);
+		}
+		
+		return nullptr;
+	}
+
+	template <typename T>
+	T* EntityManager::getComponent(const Entity entity)
+	{
+		static_assert(std::is_base_of_v<IComponent, T>, "T has to be derived from IComponent");
+
+		if (auto found = m_componentManagers.find(typeid(T).hash_code()); found != std::end(m_componentManagers))
+		{
+			return static_cast<ComponentManager<T>&>(*found->second).getComponent(entity);
+		}
+		
+		return nullptr;
 	}
 }

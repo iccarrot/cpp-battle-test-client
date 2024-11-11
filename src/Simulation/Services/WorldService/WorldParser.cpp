@@ -1,5 +1,8 @@
 #include "Simulation/Services/WorldService/WorldParser.hpp"
 
+#include <IO/Events/MapCreated.hpp>
+#include <IO/Events/MarchStarted.hpp>
+#include <IO/Events/UnitSpawned.hpp>
 #include <IO/Commands/CreateMap.hpp>
 #include <IO/Commands/March.hpp>
 #include <IO/Commands/SpawnHunter.hpp>
@@ -11,7 +14,9 @@
 #include "Simulation/Components/MoveComponent.hpp"
 #include "Simulation/Components/PositionComponent.hpp"
 #include "Simulation/Components/RangeAttackComponent.hpp"
+#include "Simulation/Services/LogService/LogService.hpp"
 #include "Simulation/Services/WorldService/World.hpp"
+#include "Simulation/Simulation.hpp"
 
 #include <fstream>
 
@@ -20,15 +25,21 @@ namespace sw::simulation
 	WorldParser::WorldParser(World& world)
 		: m_world{ world }
 	{
-		m_parser.add<io::CreateMap>([this](auto command)
+		auto& logService = simulation::instance().getService<LogService>();
+
+		//-- TODO: switch from direct instantiation to commands query
+		m_parser.add<io::CreateMap>([this, &logService](auto command)
 				{
+					printDebug(std::cout, command);
+
 					m_world.setWidth(command.width);
 					m_world.setHeight(command.height);
 
-					printDebug(std::cout, command);
+					logService.log(io::MapCreated{command.width, command.height});
 				})
-			.add<io::SpawnSwordsman>([this](auto command)
+			.add<io::SpawnSwordsman>([this, &logService](auto command)
 				{
+					printDebug(std::cout, command);
 					m_world.createEntity(command.unitId);
 
 					{
@@ -47,10 +58,18 @@ namespace sw::simulation
 						component.strength = command.strength;
 					}
 
-					printDebug(std::cout, command);
+					logService.log(
+						io::UnitSpawned
+						{
+							command.unitId,
+							"Swordsman",
+							command.x,
+							command.y
+						});
 				})
-			.add<io::SpawnHunter>([this](auto command)
+			.add<io::SpawnHunter>([this, &logService](auto command)
 				{
+					printDebug(std::cout, command);
 					m_world.createEntity(command.unitId);
 					
 					{
@@ -75,15 +94,35 @@ namespace sw::simulation
 						component.range = command.range;
 					}
 
-					printDebug(std::cout, command);
+					logService.log(
+						io::UnitSpawned
+						{
+							command.unitId,
+							"Hunter",
+							command.x,
+							command.y
+						});
 				})
-			.add<io::March>([this](auto command)
+			.add<io::March>([this, &logService](auto command)
 				{
-					auto& component = m_world.assignComponent<MoveComponent>(command.unitId);
-					component.x = command.targetX;
-					component.y = command.targetY;
-
 					printDebug(std::cout, command);
+
+					if (const auto positionComponent = m_world.getComponent<PositionComponent>(command.unitId))
+					{
+						auto& moveComponent = m_world.assignComponent<MoveComponent>(command.unitId);
+						moveComponent.x = command.targetX;
+						moveComponent.y = command.targetY;
+
+						logService.log(
+							io::MarchStarted
+							{
+								command.unitId,
+								positionComponent->x,
+								positionComponent->y,
+								moveComponent.x,
+								moveComponent.y
+							});
+					}
 				});
 	}
 
@@ -91,7 +130,6 @@ namespace sw::simulation
 	{
 		if (std::ifstream file{ path })
 		{
-			std::cout << "Commands:\n";
 			m_parser.parse(file);
 		}
 	}

@@ -10,7 +10,8 @@ namespace sw::simulation
 		using Height	= uint8_t;
 
 	public:
-		void		update();
+		void		update(const Turn turn);
+		void		postUpdate(const Turn turn);
 
 		Width		width() const { return m_width; }
 		Height		height() const { return m_height; }
@@ -22,6 +23,12 @@ namespace sw::simulation
 
 		template <typename T>
 		T&			assignComponent(const Entity entity);
+
+		template <typename T>
+		const T*	getComponent(const Entity entity) const;
+
+		template <typename T>
+		T*			getComponent(const Entity entity);
 
 	private:
 		Width			m_width = 0u;
@@ -35,5 +42,19 @@ namespace sw::simulation
 	{
 		static_assert(std::is_base_of_v<IComponent, T>, "T has to be derived from IComponent");
 		return m_entityManager.assignComponent<T>(entity);
+	}
+
+	template <typename T>
+	const T* World::getComponent(const Entity entity) const
+	{
+		static_assert(std::is_base_of_v<IComponent, T>, "T has to be derived from IComponent");
+		return m_entityManager.getComponent<T>(entity);
+	}
+
+	template <typename T>
+	T* World::getComponent(const Entity entity)
+	{
+		static_assert(std::is_base_of_v<IComponent, T>, "T has to be derived from IComponent");
+		return m_entityManager.getComponent<T>(entity);
 	}
 }

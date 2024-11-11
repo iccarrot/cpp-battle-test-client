@@ -18,6 +18,7 @@ namespace sw::simulation
 		virtual ~IService() = default;
 
 		virtual void update(const Turn turn) {}
+		virtual void postUpdate(const Turn turn) {}
 	};
 
 	template<typename T>
