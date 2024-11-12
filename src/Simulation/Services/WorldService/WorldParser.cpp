@@ -7,7 +7,6 @@
 #include <IO/Commands/March.hpp>
 #include <IO/Commands/SpawnHunter.hpp>
 #include <IO/Commands/SpawnSwordsman.hpp>
-#include <IO/System/PrintDebug.hpp>
 
 #include "Simulation/Components/HealthComponent.hpp"
 #include "Simulation/Components/MeleeAttackComponent.hpp"
@@ -30,8 +29,6 @@ namespace sw::simulation
 		//-- TODO: switch from direct instantiation to commands query
 		m_parser.add<io::CreateMap>([this, &logService](auto command)
 				{
-					printDebug(std::cout, command);
-
 					m_world.setWidth(command.width);
 					m_world.setHeight(command.height);
 
@@ -39,8 +36,6 @@ namespace sw::simulation
 				})
 			.add<io::SpawnSwordsman>([this, &logService](auto command)
 				{
-					printDebug(std::cout, command);
-
 					auto& entityManager = m_world.em();
 					entityManager.createEntity(command.unitId);
 
@@ -71,8 +66,6 @@ namespace sw::simulation
 				})
 			.add<io::SpawnHunter>([this, &logService](auto command)
 				{
-					printDebug(std::cout, command);
-
 					auto& entityManager = m_world.em();
 					entityManager.createEntity(command.unitId);
 					
@@ -109,8 +102,6 @@ namespace sw::simulation
 				})
 			.add<io::March>([this, &logService](auto command)
 				{
-					printDebug(std::cout, command);
-
 					auto& entityManager = m_world.em();
 
 					if (const auto positionComponent = entityManager.getComponent<PositionComponent>(command.unitId))

@@ -12,6 +12,7 @@ namespace sw::simulation
 	public:
 		virtual ~IComponentManager() = default;
 
+		virtual void removeComponent(const Entity entity) = 0;
 		virtual bool empty() const = 0;
 	};
 
@@ -26,7 +27,8 @@ namespace sw::simulation
 		T&			assignComponent(const Entity entity);
 		const T*	getComponent(const Entity entity) const;
 		T*			getComponent(const Entity entity);
-		void		removeComponent(const Entity entity);
+
+		void		removeComponent(const Entity entity) override { m_components.erase(entity); }
 		bool		empty() const override { return m_components.empty(); }
 
 	private:
@@ -66,11 +68,5 @@ namespace sw::simulation
 		}
 
 		return nullptr;
-	}
-
-	template <typename T>
-	void ComponentManager<T>::removeComponent(const Entity entity)
-	{
-		m_components.erase(entity);
 	}
 }

@@ -9,13 +9,15 @@ namespace sw::simulation
 {
 	class EntityManager final : public NonCopyable
 	{
-		using EntityContainer				= std::vector<Entity>;
+		using EntityContainer				= std::list<Entity>;
 		using ComponentManagerPtr			= std::unique_ptr<IComponentManager>;
 		using ComponentManagerContainer		= std::unordered_map<std::size_t, ComponentManagerPtr>;
 
 	public:
 		const EntityContainer&				entities() const { return m_entities; }
+
 		void								createEntity(const Entity entity);
+		void								removeEntity(const Entity entity);
 
 		template <typename T>
 		const ComponentManager<T>*			componentManager() const;
@@ -33,8 +35,8 @@ namespace sw::simulation
 		void								removeComponent(const Entity entity);
 
 	private:
-		EntityContainer				m_entities;
-		ComponentManagerContainer	m_componentManagers;
+		EntityContainer						m_entities;
+		ComponentManagerContainer			m_componentManagers;
 	};
 
 	template <typename T>

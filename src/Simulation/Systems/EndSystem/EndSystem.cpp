@@ -3,6 +3,7 @@
 #include "Simulation/Components/MoveComponent.hpp"
 #include "Simulation/Services/WorldService/World.hpp"
 #include "Simulation/Simulation.hpp"
+#include "Simulation/Systems/AttackSystem/AttackSystem.hpp"
 
 namespace sw::simulation
 {
@@ -18,10 +19,19 @@ namespace sw::simulation
 		}
 
 		if (const auto componentManager = entityManager.componentManager<MoveComponent>();
-			!componentManager || componentManager->empty())
+			componentManager && !componentManager->empty())
 		{
-			simulation::instance().stop();
 			return;
 		}
+
+		for (const auto entity : entities)
+		{
+			if (attack::hasTargetToAtack(entity, entityManager, false))
+			{
+				return;
+			}
+		}
+
+		simulation::instance().stop();
 	}
 }
